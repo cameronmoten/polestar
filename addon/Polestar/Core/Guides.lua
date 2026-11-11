@@ -171,6 +171,8 @@ local REQUIRED = {
 	enter = { location = isStr },
 	train = {},
 	buy = { item = isNum, itemName = isStr },
+	-- Bought at the Auction House (format 10): applies while the player buys the item (Core/Materials.lua).
+	auction = { item = isNum, itemName = isStr },
 	vendor = {},
 	level = { level = isNum },
 	money = { money = isNum },
@@ -425,6 +427,13 @@ local function checkGoal(goal)
 	if goal.r ~= nil and not (isNum(goal.r) and goal.r > 0) then return "bad radius" end
 	if goal.oi ~= nil and not (isNum(goal.oi) and goal.oi >= 1) then return "bad objective index" end
 	if goal.count ~= nil and not isNum(goal.count) then return "bad count" end
+	-- A `collect … gather` (format 10): true, or what its gather way takes (Core/Materials.lua).
+	local w = goal.gather
+	if w ~= nil and (goal.t ~= "collect" or not (w == true or (type(w) == "table" and (w.skill == nil or isStr(w.skill))
+		and (w.skillLine == nil or isNum(w.skillLine)) and (w.rank == nil or isNum(w.rank)) and (w.min == nil or isNum(w.min))
+		and (w.max == nil or isNum(w.max))))) then
+		return "bad gather"
+	end
 	if goal.text ~= nil and type(goal.text) ~= "string" then return "bad text" end
 	if goal.t == "rep" and (goal.standing < 1 or goal.standing > 8) then return "standing outside 1-8" end
 	if goal.t == "level" and goal.frac ~= nil and not isFrac(goal.frac) then return "bad frac" end
@@ -646,7 +655,7 @@ Guides.Validate = validate
 ---------------------------------------------------------------------------
 
 -- Every format Polestar has shipped (docs/PACK_FORMAT.md, "Versioning").
-Guides.FORMATS = { [1] = true, [2] = true, [3] = true, [4] = true, [5] = true, [6] = true, [7] = true, [8] = true, [9] = true }
+Guides.FORMATS = { [1] = true, [2] = true, [3] = true, [4] = true, [5] = true, [6] = true, [7] = true, [8] = true, [9] = true, [10] = true }
 Guides.RESERVED = { guides = true, forever = true, lookup = true, draft = true, polestar = true, imported = true }
 local OFFICIAL_ADDON = "Polestar_Guides"
 local REQUIRED_META = { "addon", "title", "author", "version", "license" }
